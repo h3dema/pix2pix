@@ -7,7 +7,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import v2
 
-from dataset import MyDataset
+from cityscapes_dataset import CityscapesDataset
 from model.generator import UnetGenerator
 from model.discriminator import ConditionalDiscriminator
 from model.criterion import GeneratorLoss, DiscriminatorLoss
@@ -16,9 +16,9 @@ from model.utils import Logger, initialize_weights
 
 def menu():
     parser = argparse.ArgumentParser(prog = 'top', description='Train Pix2Pix')
-    parser.add_argument("--epochs", type=int, default=200, help="Number of epochs")
-    parser.add_argument("--dataset", type=str, default="dataset", help="Path to the dataset")
-    parser.add_argument("--batch_size", type=int, default=1, help="Size of the batches")
+    parser.add_argument("-e", "--epochs", type=int, default=200, help="Number of epochs")
+    parser.add_argument("-d", "--dataset", type=str, default="datasets/cityscapes", help="Path to the cityscapes dataset")
+    parser.add_argument("-b", "--batch_size", type=int, default=32, help="Size of the batches")
     parser.add_argument("--lr", type=float, default=0.0002, help="Adams learning rate")
     args = parser.parse_args()
     return args
@@ -26,6 +26,8 @@ def menu():
 
 def train_epoch(dataloader, epoch, args, generator, discriminator, g_criterion, d_criterion, g_optimizer, d_optimizer):
     bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(dataloader))
+    ge_loss=0.0
+    de_loss=0.0
     for x, real in dataloader:
         x = x.to(device)
         real = real.to(device)
@@ -60,10 +62,15 @@ def train_epoch(dataloader, epoch, args, generator, discriminator, g_criterion, 
 
 if __name__ == '__main__':
     args = menu()
-    device = ('cuda:0' if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.is_available():
+        device = 'cuda'
+        print("Using GPU!")
+    else: 
+        device = 'cpu'
 
     transforms = v2.Compose([v2.Resize((256,256)),
-                             v2.ToTensor(),
+                             # v2.ToTensor(),  # deprecated ... replaced by the following line
+                             v2.ToImage(), v2.ToDtype(torch.float32, scale=True),  # use instead of ToTensor()
                              v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
                              ])
     # Gen and Disc models
@@ -78,14 +85,12 @@ if __name__ == '__main__':
     d_criterion = DiscriminatorLoss()
 
     # dataset and dataloader
-    dataset = MyDataset(root=args.dataset, transform=transforms, download=True, mode='train')
+    dataset = CityscapesDataset(root_dir=args.dataset, transform=transforms, mode='train')
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
     print('Start of training process!')
     logger = Logger(filename=args.dataset)
     for epoch in range(args.epochs):
-        ge_loss=0.
-        de_loss=0.
         start = time.time()
 
         ge_loss, de_loss = train_epoch(dataloader, epoch, args, generator, discriminator, g_criterion, d_criterion, g_optimizer, d_optimizer)
