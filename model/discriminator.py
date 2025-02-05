@@ -117,9 +117,16 @@ class Discriminator(nn.Module):
     
     
 class ConditionalDiscriminator(nn.Module):
-    """Conditional Discriminator"""
+    """Conditional Discriminator
+    
+       The PatchGAN discriminator’s architecture is very straightforward but
+       unlike any other GAN discriminator classifier:
+        - All the convolution layers use a kernel size of 4, with a padding of 1
+        - Followed mostly by a LeakyReLU and the batchnorm layer
+        - The one, exception being the last layer, which has a sigmoid activation to get a probabilistic value in the range [0, 1].    
+    """
 
-    def __init__(self):
+    def __init__(self, is_patchgan: bool = False):
         """
         Initializes the Discriminator model with a series of convolutional blocks.
 
@@ -135,9 +142,17 @@ class ConditionalDiscriminator(nn.Module):
         self.block1 = BasicBlock(6, 64, norm=False)
         self.block2 = BasicBlock(64, 128)
         self.block3 = BasicBlock(128, 256)
-        self.block4 = BasicBlock(256, 512)
-        self.block5 = nn.Conv2d(512, 1, kernel_size=4, stride=1, padding=1)
-        
+        self.block4 = BasicBlock(256, 512, stride=1 if is_patchgan else 2)
+        if is_patchgan:
+            self.block5 = nn.Sequential(
+                [
+                    nn.Conv2d(512, 1, kernel_size=4, stride=1, padding=1),
+                    nn.Sigmoid(),
+                ]
+            )
+        else:
+            self.block5 = nn.Conv2d(512, 1, kernel_size=4, stride=1, padding=1)        
+
     def forward(self, x: torch.Tensor, cond: torch.Tensor) -> torch.Tensor:
         """
         Forward pass for the discriminator model.
@@ -155,20 +170,27 @@ class ConditionalDiscriminator(nn.Module):
         fx = self.block4(fx)
         fx = self.block5(fx)
         
+        # in Pix2Pix, we predict at a patch level rather than outputting a scalar number.
+        # If is_patchgan is True the patch is (30×30), otherwise is (15x15)
         return fx
     
 
 if __name__ == '__main__':
+    from torchsummary import summary
+
     # test both discriminator models using a random input tensor
     device = ('cuda:0' if torch.cuda.is_available() else 'cpu')
     x = torch.randn(1, 3, 256, 256).to(device)
+    print("input:", x.shape)
 
     model = Discriminator().to(device)
     y = model(x)
-    print(y.shape)
+    print("Discriminator:", y.shape)
     
     model = ConditionalDiscriminator().to(device)
     cond = torch.randn(1, 3, 256, 256).to(device)
     y = model(x, cond)
-    print(y.shape)
+    print("Conditional image", cond.shape)
+    print("Conditional discriminator:", y.shape)
+    summary(model, [x[0].shape, cond[0].shape])
     

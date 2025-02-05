@@ -281,15 +281,19 @@ class UnetGenerator(nn.Module):
     
 
 if __name__ == '__main__':
+    from torchsummary import summary
+
     # test both generator models using a random input tensor
     device = ('cuda:0' if torch.cuda.is_available() else 'cpu')
     x = torch.randn(1, 3, 256, 256).to(device)
+    print("input:", x.shape)
 
     model = Generator().to(device)
     y = model(x)
-    print(y.shape)
+    print("Generator:", y.shape)
     
     model = UnetGenerator().to(device)
     y = model(x)
-    print(y.shape)
+    print("UnetGenerator:", y.shape)
+    summary(model, x[0].shape)
     
