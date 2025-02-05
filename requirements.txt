@@ -1,0 +1,7 @@
+progress
+tdqm
+pillow
+matplotlib
+
+torch
+torchvision
