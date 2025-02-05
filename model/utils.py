@@ -54,6 +54,7 @@ class Logger():
         else:
             self.filename="_".join([self.date, filename])
         fpath = f"{self.exp_name}/{self.filename}.json"
+        os.makedirs(os.path.dirname(fpath), exist_ok=True)
         with open(fpath, 'w') as f:
             data = json.dumps(self.cache)
             f.write(data)
