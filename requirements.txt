@@ -1,5 +1,5 @@
 progress
-tdqm
+tqdm
 pillow
 matplotlib
 
