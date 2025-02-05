@@ -1,3 +1,33 @@
+# -*- coding: utf-8 -*-
+"""
+
+@@@  @@@  @@@@@@   @@@@@@@   @@@@@@@@  @@@@@@@@@@    @@@@@@
+@@@  @@@  @@@@@@@  @@@@@@@@  @@@@@@@@  @@@@@@@@@@@  @@@@@@@@
+@@!  @@@      @@@  @@!  @@@  @@!       @@! @@! @@!  @@!  @@@
+!@!  @!@      @!@  !@!  @!@  !@!       !@! !@! !@!  !@!  @!@
+@!@!@!@!  @!@!!@   @!@  !@!  @!!!:!    @!! !!@ @!@  @!@!@!@!
+!!!@!!!!  !!@!@!   !@!  !!!  !!!!!:    !@!   ! !@!  !!!@!!!!
+!!:  !!!      !!:  !!:  !!!  !!:       !!:     !!:  !!:  !!!
+:!:  !:!      :!:  :!:  !:!  :!:       :!:     :!:  :!:  !:!
+::   :::  :: ::::   :::: ::   :: ::::  :::     ::   ::   :::
+ :   : :   : : :   :: :  :   : :: ::    :      :     :   : :
+
+
+Copyright 2025 by Henrique Duarte Moura.
+All rights reserved.
+
+This file is part of pix2pix,
+and is released under the "MIT License Agreement".
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+Please see the LICENSE file that should have been included as part of this package.
+"""
+__maintainer__ = "Henrique Duarte Moura"
+__email__ = "h3dema@outlook.com"
+__version__ = "0.1.0"
+
 import torch
 from torch import nn
 
